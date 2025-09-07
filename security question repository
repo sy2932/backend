@@ -1,0 +1,7 @@
+package com.example.LOGIN_SIGNUP.repository;
+
+import com.example.LOGIN_SIGNUP.model.SecurityQuestion;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+public interface SecurityQuestionRepository extends JpaRepository<SecurityQuestion, Long> {
+}
