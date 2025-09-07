@@ -1,0 +1,7 @@
+spring.application.name=LOGIN_SIGNUP
+
+spring.datasource.url=jdbc:postgresql://localhost:5432/my_db
+spring.datasource.username=postgres
+spring.datasource.password=Johnwick@123
+spring.jpa.hibernate.ddl-auto=update
+spring.jpa.show-sql=true
