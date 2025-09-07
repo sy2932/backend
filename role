@@ -1,0 +1,7 @@
+package com.example.LOGIN_SIGNUP.model;
+
+public enum Role {
+    ADMIN,
+    OPS,
+    EMPLOYEE
+}
