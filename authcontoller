@@ -1,0 +1,76 @@
+package com.example.LOGIN_SIGNUP.controller;
+
+import com.example.LOGIN_SIGNUP.model.Role;
+import com.example.LOGIN_SIGNUP.model.SecurityQuestion;
+import com.example.LOGIN_SIGNUP.model.User;
+import com.example.LOGIN_SIGNUP.repository.UserRepository;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.Map;
+import java.util.Optional;
+
+@RestController
+@RequestMapping("/api/auth")
+public class AuthController {
+
+    private final UserRepository userRepository;
+
+    public AuthController(UserRepository userRepository) {
+        this.userRepository = userRepository;
+    }
+
+    @PostMapping("/signup")
+    public ResponseEntity<?> signup(@RequestBody Map<String, String> body) {
+        String email = body.get("email");
+        String password = body.get("password");
+        String rePassword = body.get("rePassword");
+        String roleStr = body.get("role");
+        String question = body.get("securityQuestion");
+        String answer = body.get("securityAnswer");
+
+        if (email == null || password == null || rePassword == null || roleStr == null || question == null || answer == null) {
+            return ResponseEntity.badRequest().body("Missing required fields");
+        }
+        if (!password.equals(rePassword)) {
+            return ResponseEntity.badRequest().body("Passwords do not match");
+        }
+
+        if (userRepository.findByEmail(email).isPresent()) {
+            return ResponseEntity.badRequest().body("User with this email already exists");
+        }
+
+        Role role;
+        try {
+            role = Role.valueOf(roleStr.toUpperCase());
+        } catch (IllegalArgumentException ex) {
+            return ResponseEntity.badRequest().body("Invalid role. Use ADMIN, OPS or EMPLOYEE");
+        }
+
+        SecurityQuestion sq = new SecurityQuestion(question, answer);
+        User user = new User(email, password, role, sq);
+        userRepository.save(user);
+
+        return ResponseEntity.ok("User created");
+    }
+
+    @PostMapping("/login")
+    public ResponseEntity<?> login(@RequestBody Map<String, String> body) {
+        String email = body.get("email");
+        String password = body.get("password");
+
+        if (email == null || password == null) {
+            return ResponseEntity.badRequest().body("Missing email or password");
+        }
+
+        Optional<User> userOpt = userRepository.findByEmail(email);
+        if (userOpt.isEmpty()) return ResponseEntity.status(404).body("User not found");
+
+        User user = userOpt.get();
+        if (!user.getPassword().equals(password)) {
+            return ResponseEntity.status(401).body("Incorrect password");
+        }
+
+        return ResponseEntity.ok(user);
+    }
+}
